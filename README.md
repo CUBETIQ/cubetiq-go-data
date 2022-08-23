@@ -1,8 +1,9 @@
-# CUBETIQ Go Data
+# CUBETIQ Data Go
 
 Includes:
 
 - Body Response
+- Error Response
 
 # Contributors
 
