@@ -3,6 +3,10 @@ package param
 import (
 	"regexp"
 	"strings"
+
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Param struct {
@@ -24,7 +28,7 @@ func (p *Param) GetDefaultParam() *Param {
 }
 
 type SortByKeyValue struct {
-	Key string
+	Key   string
 	Value int
 }
 
@@ -32,7 +36,7 @@ func GetSortBy(s string) []SortByKeyValue {
 	// regex pattern
 	regexPattern := `[A-Za-z0-9\,\;\_]+$`
 	match, _ := regexp.MatchString(regexPattern, s)
-	
+
 	sortByKeyValue := make([]SortByKeyValue, 0)
 
 	// if string match regex pattern
@@ -70,4 +74,30 @@ func GetSortBy(s string) []SortByKeyValue {
 	}
 
 	return sortByKeyValue
+}
+
+func GetParam(p Param, q []string) (_filter primitive.D, _options *options.FindOptions) {
+	var filter bson.D
+	for _, query := range q {
+		filter = append(filter, bson.E{Key: query, Value: primitive.Regex{Pattern: p.Q, Options: "i"}})
+	}
+	findOption := options.Find()
+	findOption.SetLimit(p.Size)
+	if p.Page > 0 {
+		findOption.SetSkip(p.Page * p.Size)
+	} else {
+		findOption.SetSkip(0)
+	}
+	// get sort by
+	keyValue := GetSortBy(p.Sort)
+	var sortOpt bson.D
+	for _, kv := range keyValue {
+		sortOpt = append(sortOpt, bson.E{Key: kv.Key, Value: kv.Value})
+	}
+	findOption.SetSort(sortOpt)
+
+	_filter = filter
+	_options = findOption
+
+	return
 }
