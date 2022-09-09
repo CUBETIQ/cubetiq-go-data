@@ -76,18 +76,24 @@ func GetSortBy(s string) []SortByKeyValue {
 	return sortByKeyValue
 }
 
-func GetParam(p Param, q []string) (_filter primitive.D, _options *options.FindOptions) {
+func GetParam(p *Param, q []string) (_filter primitive.D, _options *options.FindOptions) {
 	var filter bson.D
+	// loop and append q
 	for _, query := range q {
 		filter = append(filter, bson.E{Key: query, Value: primitive.Regex{Pattern: p.Q, Options: "i"}})
 	}
+
 	findOption := options.Find()
+	// limit size
 	findOption.SetLimit(p.Size)
+
+	// set offset or skip
 	if p.Page > 0 {
 		findOption.SetSkip(p.Page * p.Size)
 	} else {
 		findOption.SetSkip(0)
 	}
+
 	// get sort by
 	keyValue := GetSortBy(p.Sort)
 	var sortOpt bson.D
@@ -96,8 +102,14 @@ func GetParam(p Param, q []string) (_filter primitive.D, _options *options.FindO
 	}
 	findOption.SetSort(sortOpt)
 
-	_filter = filter
-	_options = findOption
+	// return filter and findOption
+	if p.Paged {
+		_filter = bson.D{}
+		_options = options.Find()
+	} else {
+		_filter = filter
+		_options = findOption
+	}
 
 	return
 }
