@@ -4,6 +4,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/cubetiq/cubetiq-data-go/model/page"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -20,7 +21,7 @@ type Param struct {
 func (p *Param) GetDefaultParam() *Param {
 	return &Param{
 		Page:  0,
-		Paged: false,
+		Paged: true,
 		Q:     "",
 		Size:  20,
 		Sort:  "_id,desc",
@@ -83,16 +84,22 @@ func GetParam(p *Param, q []string) (_filter primitive.D, _options *options.Find
 		filter = append(filter, bson.E{Key: query, Value: primitive.Regex{Pattern: p.Q, Options: "i"}})
 	}
 
+	// check if size is negative value
+	if p.Size <= 0 {
+		p.Size = 20
+	}
+
+	// check if page is negative value
+	if p.Page < 0 {
+		p.Page = 0
+	}
+
 	findOption := options.Find()
 	// limit size
 	findOption.SetLimit(p.Size)
 
-	// set offset or skip
-	if p.Page > 0 {
-		findOption.SetSkip(p.Page * p.Size)
-	} else {
-		findOption.SetSkip(0)
-	}
+	// set offset
+	findOption.SetSkip(p.Page * p.Size)
 
 	// get sort by
 	keyValue := GetSortBy(p.Sort)
@@ -104,11 +111,28 @@ func GetParam(p *Param, q []string) (_filter primitive.D, _options *options.Find
 
 	// return filter and findOption
 	if p.Paged {
-		_filter = bson.D{}
-		_options = options.Find()
-	} else {
 		_filter = filter
 		_options = findOption
+	} else {
+		_filter = bson.D{}
+		_options = options.Find()
+	}
+
+	return
+}
+
+func GetPageResponse(p *Param, totalCount int64) (_pageRespones page.Page) {
+	var totalPage int64
+	if totalCount < p.Size {
+		totalPage = 1
+	} else {
+		totalPage = totalCount / p.Size
+	}
+	_pageRespones = page.Page{
+		TotalPage:  totalPage,
+		Page:       p.Page,
+		TotalCount: totalCount,
+		PageSize:   p.Size,
 	}
 
 	return
