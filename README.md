@@ -4,6 +4,8 @@ Includes:
 
 - Body Response
 - Error Response
+- Pagination Model
+- Url Param Util
 
 # Contributors
 
