@@ -3,8 +3,8 @@ module github.com/cubetiq/cubetiq-data-go
 go 1.17
 
 require (
-	github.com/gofiber/fiber/v2 v2.39.0
-	go.mongodb.org/mongo-driver v1.10.2
+	github.com/gofiber/fiber/v2 v2.40.1
+	go.mongodb.org/mongo-driver v1.11.0
 )
 
 require (
