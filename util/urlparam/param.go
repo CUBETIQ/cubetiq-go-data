@@ -1,6 +1,7 @@
 package param
 
 import (
+	"math"
 	"regexp"
 	"strings"
 
@@ -122,14 +123,15 @@ func GetParam(p *Param, q []string) (_filter primitive.D, _options *options.Find
 }
 
 func GetPageResponse(p *Param, totalCount int64) (_pageRespones page.Page) {
-	var totalPage int64
+	var totalPage float64
 	if totalCount < p.Size {
 		totalPage = 1
 	} else {
-		totalPage = totalCount / p.Size
+		totalPage = float64(totalCount) / float64(p.Size)
 	}
+
 	_pageRespones = page.Page{
-		TotalPage:  totalPage,
+		TotalPage:  int64(math.Ceil(totalPage)),
 		Page:       p.Page,
 		TotalCount: totalCount,
 		PageSize:   p.Size,
