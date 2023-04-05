@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/gofiber/fiber/v2 v2.42.0
-	go.mongodb.org/mongo-driver v1.11.1
+	go.mongodb.org/mongo-driver v1.11.4
 )
 
 require (
